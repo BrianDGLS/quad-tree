@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "watch": "esbuild src/main.ts --bundle --outfile=public/main.js --watch",
+    "build": "esbuild src/main.ts --bundle --outfile=public/main.js --minify",
+    "serve": "serve public",
+    "dev": "concurrently -p [{name}] -n esbuild,serve -c bgYellow.bold,bgGreen.bold npm:watch npm:serve",
+    "format": "prettier --write ./src/*"
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0",
+    "esbuild": "^0.17.12",
+    "prettier": "^2.8.6",
+    "serve": "^14.2.0"
+  }
+}
