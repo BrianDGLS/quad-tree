@@ -1,5 +1,5 @@
 public/**/*.js
-
+.idea
 # Logs
 logs
 *.log
