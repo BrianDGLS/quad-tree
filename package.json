@@ -3,9 +3,10 @@
     "watch": "esbuild src/main.ts --bundle --outfile=public/main.js --watch",
     "build": "esbuild src/main.ts --bundle --outfile=public/main.js --minify",
     "serve": "serve public",
+    "test": "vitest",
     "dev": "concurrently -p [{name}] -n build,serve,format -c bgYellow.bold,bgGreen.bold,bgBlue.bold npm:watch npm:serve npm:format",
     "format": "prettier --write ./src/*",
-	  "format-watch": "onchange \"src/**/*\" -- prettier --write --ignore-unknown {{changed}}"
+    "format-watch": "onchange \"src/**/*\" -- prettier --write --ignore-unknown {{changed}}"
   },
   "dependencies": {
     "concurrently": "^7.6.0",
@@ -13,5 +14,8 @@
     "onchange": "^7.1.0",
     "prettier": "^2.8.6",
     "serve": "^14.2.0"
+  },
+  "devDependencies": {
+    "vitest": "^0.31.0"
   }
 }

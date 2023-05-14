@@ -1,11 +1,11 @@
-import { Context, Vec2 } from "./types"
+import { Context, XY } from "./types"
 import { hsla, getRandomInt, isEven } from "./utils"
 
 const drawCRTStatic = (
     ctx: Context,
     w: number,
     h: number,
-    passes: Vec2 = { x: 5, y: 20 },
+    passes: XY = { x: 5, y: 20 },
 ) => {
     ctx.save()
 
