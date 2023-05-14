@@ -42,15 +42,94 @@ export class QuadTreeNodes {
 }
 
 export class QuadTree {
-    public readonly maxElements = 4
+    public readonly capacity = 4
 
-    public elements: AABB[] = Array(this.maxElements)
+    public points: XY[] = []
 
     public nodes = new QuadTreeNodes()
 
     constructor(public bounds: AABB) {}
 
-    public subdivide() {
+    public isSubdivided(): boolean {
+        return this.nodes.northWest !== undefined
+    }
+
+    /**
+     * Insert a point into the QuadTree
+     * @param point
+     */
+    public insert(point: XY): boolean {
+        // Ignore objects that do not belong in this quad tree
+        if (!this.bounds.containsPoint(point)) {
+            return false // object cannot be added
+        }
+
+        // If there is space in this quad tree and if it doesn't have subdivisions,
+        // add the object here
+        if (this.points.length < this.capacity && !this.isSubdivided()) {
+            this.points.push(point)
+            return true
+        }
+
+        // Otherwise, subdivide and then add the point to whichever node will accept it
+        if (!this.isSubdivided()) {
+            this.subdivide()
+        }
+
+        // We have to add the points/data contained in this quad array to the new quads if we only want
+        // the last node to hold the data
+        if (this.nodes.northWest.insert(point)) return true
+        if (this.nodes.northEast.insert(point)) return true
+        if (this.nodes.southWest.insert(point)) return true
+        if (this.nodes.southEast.insert(point)) return true
+
+        // Otherwise, the point cannot be inserted for some unknown reason (this should never happen)
+        return false
+    }
+
+    /**
+     * Find all points that appear with in a given range
+     * @param range
+     */
+    public queryRange(range: AABB): XY[] {
+        // Prepare an array of results
+        const pointsInRange: XY[] = []
+
+        // Automatically abort if the range does not intersect this quad
+        if (!this.bounds.intersects(range)) {
+            return pointsInRange // empty list
+        }
+
+        // Check objects at this quad level
+        for (let p = 0; p < this.points.length; p++) {
+            if (range.containsPoint(this.points[p])) {
+                pointsInRange.push(this.points[p])
+            }
+        }
+
+        // Terminate here, if there are no children
+        if (!this.isSubdivided()) {
+            return pointsInRange
+        }
+
+        // Otherwise, add the points from the children
+        pointsInRange.push(...this.nodes.northWest.queryRange(range))
+        pointsInRange.push(...this.nodes.northEast.queryRange(range))
+        pointsInRange.push(...this.nodes.southWest.queryRange(range))
+        pointsInRange.push(...this.nodes.southEast.queryRange(range))
+
+        return pointsInRange
+    }
+
+    /**
+     * Create four children that fully divide this quad into four quads of equal area
+     * @private
+     */
+    private subdivide() {
+        if (this.isSubdivided()) {
+            return
+        }
+
         const { x, y } = this.bounds
         const width = this.bounds.width / 2
         const height = this.bounds.height / 2
@@ -65,8 +144,4 @@ export class QuadTree {
         this.nodes.southWest = new QuadTree(southWest)
         this.nodes.southEast = new QuadTree(southEast)
     }
-
-    public insert(element: AABB) {}
-
-    public queryRange(range: AABB) {}
 }
