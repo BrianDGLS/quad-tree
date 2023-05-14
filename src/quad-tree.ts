@@ -19,6 +19,15 @@ export class AABB {
             point.y <= this.y + this.height
         )
     }
+
+    public intersects(other: AABB): boolean {
+        return (
+            other.x + other.width >= this.x &&
+            other.x <= this.x + this.width &&
+            other.y + other.height >= this.y &&
+            other.y <= this.y + this.height
+        )
+    }
 }
 
 export class QuadTreeNodes {
