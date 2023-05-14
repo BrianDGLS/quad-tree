@@ -57,7 +57,7 @@ describe("Checking bounds contains a point", () => {
     })
 
     it.concurrent(
-        "should know that a does not contain b when only x is inside",
+        "should know that a does not contain b when only b.x is inside",
         ({ expect }) => {
             const a = new AABB(0, 0, 20, 20)
             const b = { x: 10, y: 21 }
@@ -67,7 +67,7 @@ describe("Checking bounds contains a point", () => {
     )
 
     it.concurrent(
-        "should know that a does not contain b when only y is inside",
+        "should know that a does not contain b when only b.y is inside",
         ({ expect }) => {
             const a = new AABB(0, 0, 20, 20)
             const b = { x: 21, y: 10 }
