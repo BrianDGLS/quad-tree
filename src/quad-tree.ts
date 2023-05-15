@@ -21,11 +21,11 @@ export class AABB {
     }
 
     public intersects(other: AABB): boolean {
-        return (
-            other.x + other.width >= this.x &&
-            other.x <= this.x + this.width &&
-            other.y + other.height >= this.y &&
-            other.y <= this.y + this.height
+        return !(
+            other.x > this.x + this.width ||
+            other.x + other.width < this.x ||
+            other.y > this.y + this.height ||
+            other.y + other.height < this.y
         )
     }
 }
@@ -48,11 +48,9 @@ export class QuadTree {
 
     public nodes = new QuadTreeNodes()
 
-    constructor(public bounds: AABB) {}
+    public divided = false
 
-    public isSubdivided(): boolean {
-        return this.nodes.northWest !== undefined
-    }
+    constructor(public bounds: AABB) {}
 
     /**
      * Insert a point into the QuadTree
@@ -66,25 +64,24 @@ export class QuadTree {
 
         // If there is space in this quad tree and if it doesn't have subdivisions,
         // add the object here
-        if (this.points.length < this.capacity && !this.isSubdivided()) {
+        if (!this.divided && this.points.length < this.capacity) {
             this.points.push(point)
             return true
         }
 
         // Otherwise, subdivide and then add the point to whichever node will accept it
-        if (!this.isSubdivided()) {
+        if (!this.divided) {
             this.subdivide()
         }
 
         // We have to add the points/data contained in this quad array to the new quads if we only want
         // the last node to hold the data
-        if (this.nodes.northWest.insert(point)) return true
-        if (this.nodes.northEast.insert(point)) return true
-        if (this.nodes.southWest.insert(point)) return true
-        if (this.nodes.southEast.insert(point)) return true
-
-        // Otherwise, the point cannot be inserted for some unknown reason (this should never happen)
-        return false
+        return (
+            this.nodes.northWest.insert(point) ||
+            this.nodes.northEast.insert(point) ||
+            this.nodes.southWest.insert(point) ||
+            this.nodes.southEast.insert(point)
+        )
     }
 
     /**
@@ -100,35 +97,35 @@ export class QuadTree {
             return pointsInRange // empty list
         }
 
-        // Check objects at this quad level
-        for (let p = 0; p < this.points.length; p++) {
-            if (range.containsPoint(this.points[p])) {
-                pointsInRange.push(this.points[p])
-            }
-        }
+        if (this.divided) {
+            // Otherwise, add the points from the children
+            pointsInRange.push(...this.nodes.northWest.queryRange(range))
+            pointsInRange.push(...this.nodes.northEast.queryRange(range))
+            pointsInRange.push(...this.nodes.southWest.queryRange(range))
+            pointsInRange.push(...this.nodes.southEast.queryRange(range))
 
-        // Terminate here, if there are no children
-        if (!this.isSubdivided()) {
             return pointsInRange
         }
 
-        // Otherwise, add the points from the children
-        pointsInRange.push(...this.nodes.northWest.queryRange(range))
-        pointsInRange.push(...this.nodes.northEast.queryRange(range))
-        pointsInRange.push(...this.nodes.southWest.queryRange(range))
-        pointsInRange.push(...this.nodes.southEast.queryRange(range))
+        // Check objects at this quad level
+        for (const p of this.points) {
+            if (range.containsPoint(p)) {
+                pointsInRange.push(p)
+            }
+        }
 
         return pointsInRange
     }
 
     /**
-     * Create four children that fully divide this quad into four quads of equal area
+     * Create four children that fully divide this quad into four quads of equal areas
      * @private
      */
     private subdivide() {
-        if (this.isSubdivided()) {
+        if (this.divided) {
             return
         }
+        this.divided = true
 
         const { x, y } = this.bounds
         const width = this.bounds.width / 2
@@ -143,5 +140,14 @@ export class QuadTree {
         this.nodes.northEast = new QuadTree(northEast)
         this.nodes.southWest = new QuadTree(southWest)
         this.nodes.southEast = new QuadTree(southEast)
+
+        for (const p of this.points) {
+            this.nodes.northWest.insert(p)
+            this.nodes.northEast.insert(p)
+            this.nodes.southWest.insert(p)
+            this.nodes.southEast.insert(p)
+        }
+
+        this.points = null
     }
 }
