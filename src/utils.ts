@@ -11,3 +11,5 @@ export const isEven = (n: number): boolean => n % 2 === 0
 
 export const hsla = (h: number, s = 100, l = 100, a = 1): string =>
     `hsla(${h}, ${s}%, ${l}%, ${a})`
+
+export const choose = (a, b) => (Math.random() > 0.5 ? a : b)

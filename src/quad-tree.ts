@@ -1,34 +1,5 @@
-import { XY } from "./types"
-
-/**
- * Axis-Aligned Bounding Box
- */
-export class AABB {
-    constructor(
-        public x: number,
-        public y: number,
-        public width: number,
-        public height: number,
-    ) {}
-
-    public containsPoint(point: XY): boolean {
-        return (
-            point.x >= this.x &&
-            point.x <= this.x + this.width &&
-            point.y >= this.y &&
-            point.y <= this.y + this.height
-        )
-    }
-
-    public intersects(other: AABB): boolean {
-        return !(
-            other.x > this.x + this.width ||
-            other.x + other.width < this.x ||
-            other.y > this.y + this.height ||
-            other.y + other.height < this.y
-        )
-    }
-}
+import { AABB } from "./aabb"
+import { XY } from "./xy"
 
 export class QuadTreeNodes {
     public northWest: QuadTree
@@ -46,9 +17,9 @@ export class QuadTree {
 
     public points: XY[] = []
 
-    public nodes = new QuadTreeNodes()
-
     public divided = false
+
+    public nodes = new QuadTreeNodes()
 
     constructor(public bounds: AABB) {}
 
@@ -57,25 +28,19 @@ export class QuadTree {
      * @param point
      */
     public insert(point: XY): boolean {
-        // Ignore objects that do not belong in this quad tree
         if (!this.bounds.containsPoint(point)) {
-            return false // object cannot be added
+            return false
         }
 
-        // If there is space in this quad tree and if it doesn't have subdivisions,
-        // add the object here
         if (!this.divided && this.points.length < this.capacity) {
             this.points.push(point)
             return true
         }
 
-        // Otherwise, subdivide and then add the point to whichever node will accept it
         if (!this.divided) {
             this.subdivide()
         }
 
-        // We have to add the points/data contained in this quad array to the new quads if we only want
-        // the last node to hold the data
         return (
             this.nodes.northWest.insert(point) ||
             this.nodes.northEast.insert(point) ||
@@ -89,16 +54,13 @@ export class QuadTree {
      * @param range
      */
     public queryRange(range: AABB): XY[] {
-        // Prepare an array of results
         const pointsInRange: XY[] = []
 
-        // Automatically abort if the range does not intersect this quad
         if (!this.bounds.intersects(range)) {
-            return pointsInRange // empty list
+            return pointsInRange
         }
 
         if (this.divided) {
-            // Otherwise, add the points from the children
             pointsInRange.push(...this.nodes.northWest.queryRange(range))
             pointsInRange.push(...this.nodes.northEast.queryRange(range))
             pointsInRange.push(...this.nodes.southWest.queryRange(range))
@@ -107,7 +69,6 @@ export class QuadTree {
             return pointsInRange
         }
 
-        // Check objects at this quad level
         for (const p of this.points) {
             if (range.containsPoint(p)) {
                 pointsInRange.push(p)
