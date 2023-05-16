@@ -1,1 +1,1 @@
-# quad tree
+# JS Game Starter
