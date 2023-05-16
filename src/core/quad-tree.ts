@@ -109,6 +109,6 @@ export class QuadTree {
             this.nodes.southEast.insert(p)
         }
 
-        this.points = null
+        this.points = []
     }
 }

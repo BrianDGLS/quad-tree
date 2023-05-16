@@ -1,4 +1,4 @@
-import {XY} from "./types";
+import { XY } from "./xy"
 
 /**
  * Axis-Aligned Bounding Box
@@ -9,8 +9,7 @@ export class AABB {
         public y: number,
         public width: number,
         public height: number,
-    ) {
-    }
+    ) {}
 
     public containsPoint(point: XY): boolean {
         return (

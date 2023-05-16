@@ -1,17 +1,20 @@
-import { Context, XY } from "./types"
-import { hsla, getRandomInt, isEven } from "./utils"
+import { XY } from "./xy"
+import { Context } from "./types"
+import { hsla } from "./color"
+import { randomInt } from "./random"
+import { isEven } from "./math"
 
 const drawCRTStatic = (
     ctx: Context,
     w: number,
     h: number,
-    passes: XY = { x: 5, y: 20 },
+    passes = new XY(5, 20),
 ) => {
     ctx.save()
 
     for (let y = 0; y < passes.y; y++) {
         for (let x = 0; x < w; x += passes.x) {
-            ctx.fillStyle = hsla(0, 0, getRandomInt(0, 100), 0.02)
+            ctx.fillStyle = hsla(0, 0, randomInt(0, 100), 0.02)
             ctx.fillRect(x, y, passes.x, 1)
         }
     }
